@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>WTelegramClient</id>
+    <version>3.3.3</version>
+    <authors>Wizou</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <icon>logo.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/wiz0u/WTelegramClient</projectUrl>
+    <description>Telegram Client API (MTProto) library written 100% in C# and .NET Standard | Latest API layer: 156
+
+Release Notes:
+- API Layer 156: some email login stuff
+- MainUsername property on IPeerInfo
+- Updated api documentation</description>
+    <releaseNotes>- API Layer 156: some email login stuff
+- MainUsername property on IPeerInfo
+- Updated api documentation</releaseNotes>
+    <copyright>Copyright © Olivier Marcoux 2021-2023</copyright>
+    <tags>Telegram MTProto Client Api UserBot TLSharp</tags>
+    <repository type="git" url="https://github.com/wiz0u/WTelegramClient.git" />
+    <dependencies>
+      <group targetFramework="net5.0" />
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="IndexRange" version="1.0.2" exclude="Build,Analyzers" />
+        <dependency id="System.Memory" version="4.5.5" exclude="Build,Analyzers" />
+        <dependency id="System.Text.Json" version="6.0.5" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
