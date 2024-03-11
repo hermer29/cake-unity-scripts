@@ -218,12 +218,10 @@ async Task<ChatBase> GetTargetChat(WTelegram.Client client)
 
 async Task<WTelegram.Client> CreateClient()
 {
-    using(var opened = System.IO.File.Open(TelegramSessionPath, FileMode.OpenOrCreate))
-    {
-        var tgClient = new WTelegram.Client(TelegramConfig, opened);
-        var account = await tgClient.LoginUserIfNeeded();
-        return tgClient;
-    }
+    var opened = System.IO.File.Open(TelegramSessionPath, FileMode.OpenOrCreate)
+    var tgClient = new WTelegram.Client(TelegramConfig, opened);
+    var account = await tgClient.LoginUserIfNeeded();
+    return tgClient;
 }
 
 async void WriteTelegramMessage(string message)
