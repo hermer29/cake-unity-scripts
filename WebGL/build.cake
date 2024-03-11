@@ -16,12 +16,6 @@ using System.Globalization;
 string ProjectName = Context.Configuration.GetValue("Project_Name");
 const string ArtifactsFolderPath = "./artifacts";
 
-var opened = System.IO.File.Open(TelegramSessionPath, FileMode.OpenOrCreate);
-var tgClient = new WTelegram.Client(TelegramConfig, opened);
-var account = await tgClient.LoginUserIfNeeded();
-var dialogs = await tgClient.Channels_GetAdminedPublicChannels();
-var lastCommit = GitLog(new DirectoryPath("."), 1).First();
-
 var target = Argument("target", SendBuildNotificationEndingTask);
 
 #region Send-Build-Notification-Start
@@ -34,14 +28,9 @@ Task(SendBuildNotificationStartingTask)
     WriteTelegramMessage(CreateStartingTelegramMessage());
 });
 
-async void WriteTelegramMessage(string message)
-{
-    var dialog = GetTargetChat();
-    await tgClient.SendMessageAsync(dialog, message);
-}
-
 string CreateStartingTelegramMessage()
 {
+    var lastCommit = GitLog(new DirectoryPath("."), 1).First();
     var message = $"❗❗❗Начат билд по проекту {ProjectName}! " + 
         $"Произошедшие изменения: {lastCommit.Message}\n";
     return message;
@@ -164,51 +153,18 @@ Task(ZipArtifactsTask)
 #region Send-Build-Notification-Ending
 
 const string SendBuildNotificationEndingTask = "Send-Build-Notification-Ending";
-const string TelegramSessionPathParameter = "Telegram_SessionPath";
-const string TelegramChatIdParameter = "Telegram_ChatId";
-const string TelegramApiIdParameter = "Telegram_ApiId";
-const string TelegramApiHashParameter = "Telegram_ApiHash";
-const string TelegramPhoneNumberParameter = "Telegram_PhoneNumber";
-
-string TelegramSessionPath => Context.Configuration.GetValue(TelegramSessionPathParameter);
 
 Task(SendBuildNotificationEndingTask)
     .IsDependentOn(ZipArtifactsTask)
     .Does(async () => 
 {
-    var handle = await tgClient.UploadFileAsync(pathToZippedBuild);
-    var targetChat = GetTargetChat();
-    var message = await tgClient.SendMediaAsync(targetChat, CreateEndingTelegramMessage(), handle);
+    using(var tgClient = await CreateClient())
+    {
+        var handle = await tgClient.UploadFileAsync(pathToZippedBuild);
+        var targetChat = await GetTargetChat(tgClient);
+        var message = await tgClient.SendMediaAsync(targetChat, CreateEndingTelegramMessage(), handle);
+    }
 });
-
-ChatBase GetTargetChat()
-{
-    if(Int64.TryParse(Context.Configuration.GetValue(TelegramChatIdParameter), out Int64 chatId))
-    {
-        return dialogs.chats[chatId];
-    }
-    
-    var targetDialog = dialogs.chats.FirstOrDefault(x => x.Value.Title == Context.Configuration.GetValue(TelegramChatIdParameter)).Value;
-    if(targetDialog == null)
-        throw new Exception("Not found required chat");
-    return targetDialog;
-}
-
-string TelegramConfig(string what)
-{
-    switch (what)
-    {
-        case "api_id": return Context.Configuration.GetValue(TelegramApiIdParameter);
-        case "api_hash": return Context.Configuration.GetValue(TelegramApiHashParameter);
-        case "phone_number": return Context.Configuration.GetValue(TelegramPhoneNumberParameter);
-        case "verification_code": Console.Write("Code: "); return Console.ReadLine();
-        // Есть включена двойная аутентификация на аккаунте это может понадобиться:
-        case "first_name": return "John";
-        case "last_name": return "Doe";
-        case "password": return "secret!";
-        default: return null;                  
-    }
-}
 
 string CreateEndingTelegramMessage()
 {
@@ -220,6 +176,65 @@ string CreateEndingTelegramMessage()
         $"Прилагается архив с билдом:";
     return message;
 }
+#endregion
+
+#region Telegram Utilities
+
+string TelegramSessionPath => Context.Configuration.GetValue(TelegramSessionPathParameter);
+const string TelegramSessionPathParameter = "Telegram_SessionPath";
+const string TelegramChatIdParameter = "Telegram_ChatId";
+const string TelegramApiIdParameter = "Telegram_ApiId";
+const string TelegramApiHashParameter = "Telegram_ApiHash";
+const string TelegramPhoneNumberParameter = "Telegram_PhoneNumber";
+
+string TelegramConfig(string what)
+{
+    switch (what)
+    {
+        case "api_id": return Context.Configuration.GetValue(TelegramApiIdParameter);
+        case "api_hash": return Context.Configuration.GetValue(TelegramApiHashParameter);
+        case "phone_number": return Context.Configuration.GetValue(TelegramPhoneNumberParameter);
+        case "verification_code": Console.Write("Code: "); return Console.ReadLine();
+        case "first_name": return "John";
+        case "last_name": return "Doe";
+        case "password": return "secret!";
+        default: return null;                  
+    }
+}
+
+async Task<ChatBase> GetTargetChat(WTelegram.Client client)
+{
+    var dialogs = await client.Messages_GetAllChats();
+    if(Int64.TryParse(Context.Configuration.GetValue(TelegramChatIdParameter), out Int64 chatId))
+    {
+        return dialogs.chats[chatId];
+    }
+    
+    var targetDialog = dialogs.chats.FirstOrDefault(x => x.Value.Title == Context.Configuration.GetValue(TelegramChatIdParameter)).Value;
+    if(targetDialog == null)
+        throw new Exception("Not found required chat");
+    return targetDialog;
+}
+
+async Task<WTelegram.Client> CreateClient()
+{
+    using(var opened = System.IO.File.Open(TelegramSessionPath, FileMode.OpenOrCreate))
+    {
+        var tgClient = new WTelegram.Client(TelegramConfig, opened);
+        var account = await tgClient.LoginUserIfNeeded();
+        return tgClient;
+    }
+}
+
+async void WriteTelegramMessage(string message)
+{   
+    using(var client = await CreateClient())
+    {
+        var dialog = await GetTargetChat(client);
+        await client.SendMessageAsync(dialog, message);
+    }
+}
+
 #endregion
 
 RunTarget(target);
