@@ -1,5 +1,5 @@
 ﻿#addin nuget:?package=Cake.Unity&version=0.9.0
-#addin nuget:?package=WTelegramClient&version=3.3.3
+#addin nuget:?package=WTelegramClient&version=3.4.2
 #addin nuget:?package=FluentFTP&version=46.0.2
 #addin nuget:?package=Cake.Git&version=3.0.0
 
