@@ -23,9 +23,9 @@ var target = Argument("target", SendBuildNotificationEndingTask);
 const string SendBuildNotificationStartingTask = "Send-Build-Notification-Start";
 
 Task(SendBuildNotificationStartingTask)
-    .Does(() => 
+    .Does(async () => 
 {
-    WriteTelegramMessage(CreateStartingTelegramMessage());
+    await WriteTelegramMessage(CreateStartingTelegramMessage());
 });
 
 string CreateStartingTelegramMessage()
@@ -224,7 +224,7 @@ async Task<WTelegram.Client> CreateClient()
     return tgClient;
 }
 
-async void WriteTelegramMessage(string message)
+async Task WriteTelegramMessage(string message)
 {   
     using(var client = await CreateClient())
     {
