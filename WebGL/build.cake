@@ -68,6 +68,7 @@ Task(BuildWebGlTask)
     .IsDependentOn(CleanArtifactsTask)
     .Does(() => 
 {
+    Information("Open unity in path: " + UnityPath);
     UnityEditor(
         new FilePath(UnityPath),
         CreateUnityEditorArguments(),
