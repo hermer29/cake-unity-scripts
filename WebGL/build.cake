@@ -82,6 +82,7 @@ UnityEditorArguments CreateUnityEditorArguments()
 {
     var arguments = new UnityEditorArguments
     {
+        BatchMode = true,
         LogFile = ArtifactsFolderPath + "/unity.log",
         ExecuteMethod = UnityBuildMethod,
         BuildTarget = BuildTarget.WebGL,
