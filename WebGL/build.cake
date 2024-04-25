@@ -69,6 +69,7 @@ Task(BuildWebGlTask)
     .Does(() => 
 {
     UnityEditor(
+        new FilePath(UnityPath),
         CreateUnityEditorArguments(),
         new UnityEditorSettings 
         {
