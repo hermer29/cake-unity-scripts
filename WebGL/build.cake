@@ -86,7 +86,9 @@ UnityEditorArguments CreateUnityEditorArguments()
         ExecuteMethod = UnityBuildMethod,
         BuildTarget = BuildTarget.WebGL,
         ProjectPath = ProjectFolderPath,
-        ForceFree = true
+        ForceFree = true,
+        Username = Context.Configuration.GetValue("Unity_Username"),
+        Password = Context.Configuration.GetValue("Unity_Password")
     };
     arguments.Custom.BuildFolder = CreateBuildFolderName();
     return arguments;
