@@ -89,7 +89,8 @@ UnityEditorArguments CreateUnityEditorArguments()
         ProjectPath = ProjectFolderPath,
         Username = Context.Configuration.GetValue("Unity_Username"),
         Password = Context.Configuration.GetValue("Unity_Password"),
-        ForceFree = true
+        ForceFree = true,
+        NoGraphics = true
     };
     arguments.Custom.BuildFolder = CreateBuildFolderName();
     return arguments;
